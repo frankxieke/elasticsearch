@@ -19,6 +19,8 @@
 
 package org.elasticsearch.index.translog;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.store.DataInput;
 import org.apache.lucene.store.DataOutput;
@@ -33,6 +35,8 @@ import org.elasticsearch.index.seqno.SequenceNumbers;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 
@@ -46,6 +50,8 @@ final class Checkpoint {
     final long globalCheckpoint;
     final long minTranslogGeneration;
     final long trimmedAboveSeqNo;
+    private static final Logger logger = LogManager.getLogger(Checkpoint.class);
+
 
     private static final int INITIAL_VERSION = 1; // start with 1, just to recognize there was some magic serialization logic before
     private static final int VERSION_6_0_0 = 2; // introduction of global checkpoints
@@ -225,6 +231,15 @@ final class Checkpoint {
                 "checkpoint files have to be smaller than 512 bytes for atomic writes; size: " + indexOutput.getFilePointer();
 
         }
+
+        try {
+            // wfs2 not supprt random write, so we delete it first
+            Files.delete(checkpointFile);
+        } catch (NoSuchFileException e) {
+            logger.warn("delete ckp file {}, not exist", checkpointFile);
+        }
+        logger.info("delete ckp file {} succeed, will write it again", checkpointFile);
+
         // now go and write to the channel, in one go.
         try (FileChannel channel = factory.open(checkpointFile, options)) {
             Channels.writeToChannel(byteOutputStream.toByteArray(), channel);

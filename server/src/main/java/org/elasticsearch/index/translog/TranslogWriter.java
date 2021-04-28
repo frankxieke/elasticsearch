@@ -398,7 +398,7 @@ public class TranslogWriter extends BaseTranslogReader implements Closeable {
             final ChannelFactory channelFactory,
             final Path translogFile,
             final Checkpoint checkpoint) throws IOException {
-        Checkpoint.write(channelFactory, translogFile.resolve(Translog.CHECKPOINT_FILE_NAME), checkpoint, StandardOpenOption.WRITE);
+        Checkpoint.write(channelFactory, translogFile.resolve(Translog.CHECKPOINT_FILE_NAME), checkpoint, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
     }
 
     /**

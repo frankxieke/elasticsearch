@@ -96,7 +96,6 @@ import java.util.stream.Stream;
  * </p>
  */
 public class Translog extends AbstractIndexShardComponent implements IndexShardComponent, Closeable {
-
     /*
      * TODO
      *  - we might need something like a deletion policy to hold on to more than one translog eventually (I think sequence IDs needs this)
